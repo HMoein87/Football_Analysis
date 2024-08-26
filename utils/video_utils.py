@@ -1,4 +1,5 @@
 import cv2
+import os
 
 
 def read_video(video_path):
@@ -37,6 +38,23 @@ def save_video(output_video_frames, output_video_path):
     output_video_path (str): The path to save the video file.
     """
     
+    # Check if the output video exists and rename it
+    version = 0
+    if os.path.exists(output_video_path):
+        path = os.path.split(output_video_path)
+        video_path = path[0]
+        video_name = path[1]
+        split_tup = os.path.splitext(video_name)
+        
+        # extract the file name and extension
+        file_name = split_tup[0]
+        file_extension = split_tup[1]
+        
+        while os.path.isfile(output_video_path):
+            version += 1
+            video_name = f'{file_name}_{version}{file_extension}'
+            output_video_path = os.path.join(video_path, video_name)
+            
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     out = cv2.VideoWriter(output_video_path, fourcc, 24, (output_video_frames[0].shape[1],  output_video_frames[0].shape[0]))
@@ -47,3 +65,5 @@ def save_video(output_video_frames, output_video_path):
     
     # Release the VideoWriter object
     out.release()
+    
+    print(f'{video_name} released.')
