@@ -40,10 +40,11 @@ def save_video(output_video_frames, output_video_path):
     
     # Check if the output video exists and rename it
     version = 0
+    path = os.path.split(output_video_path)
+    video_path = path[0]
+    video_name = path[1]
+        
     if os.path.exists(output_video_path):
-        path = os.path.split(output_video_path)
-        video_path = path[0]
-        video_name = path[1]
         split_tup = os.path.splitext(video_name)
         
         # extract the file name and extension
