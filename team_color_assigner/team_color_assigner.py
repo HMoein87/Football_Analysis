@@ -2,11 +2,27 @@ from sklearn.cluster import KMeans
 
 
 class TeamColorAssigner:
+    '''
+    Assigns teams to players
+    '''
     def __init__(self):
+        '''
+        Initializes the team color assigner
+        '''
+        self.kmeans = None
         self.team_colors = {}
         self.player_team_dict = {}
     
     def get_clustering_model(self, image):
+        '''
+        Gets the clustering model for the image
+        
+        Args:
+            image: image to cluster
+        Returns
+            kmeans: clustering model
+        '''
+      
         # Reshape image to 2D array
         image_2d = image.reshape(-1,3)
         
@@ -19,6 +35,16 @@ class TeamColorAssigner:
         
     
     def get_player_color(self, frame, bbox):
+        '''
+        Gets the color of the player
+        
+        Args:
+            frame: frame to cluster
+            bbox: bounding box of the player
+        Returns
+            player_color: color of the player
+        '''
+      
         player_image = frame[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
         player_top_half_image = player_image[0:int(player_image.shape[0]/2), :]
         
@@ -48,7 +74,15 @@ class TeamColorAssigner:
         
         
     def assign_team_color(self, frame, player_detections):
+        '''
+        Assigns teams to players
         
+        Args:
+            frame: frame to cluster
+            player_detections: dictionary of player detections
+        '''
+        
+        # Get the player colors
         player_colors = []
         for _, player_detection in player_detections.items():
             bbox = player_detection["bbox"]
@@ -65,12 +99,25 @@ class TeamColorAssigner:
         
         
     def get_player_team(self, frame, player_bbox, player_id):
+        '''
+        Gets the team of the player
         
+        Args:
+            frame: frame to cluster
+            player_bbox: bounding box of the player
+            player_id: id of the player
+        Returns
+            team_id: id of the team
+        '''
+        
+        # Check if the player is already in the dictionary
         if player_id in self.player_team_dict:
             return self.player_team_dict[player_id]
         
+        # Get the player color
         player_color  = self.get_player_color(frame, player_bbox)
         
+        # Get the team id
         team_id = self.kmeans.predict(player_color.reshape(1,-1))[0]
         team_id += 1
         
