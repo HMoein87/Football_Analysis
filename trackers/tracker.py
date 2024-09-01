@@ -24,6 +24,15 @@ class Tracker:
     self.tracker = sv.ByteTrack()
 
   def interpolate_ball_positions(self, ball_positions):
+    '''
+    Interpolates ball positions
+
+    Args:
+      ball_positions: list of ball positions
+    Returns
+      ball_positions: list of interpolated ball positions
+    '''
+    
     ball_positions = [x.get(1, {}).get('bbox', []) for x in ball_positions]
     df_ball_positions = pd.DataFrame(ball_positions, columns=['x1', 'y1', 'x2', 'y2'])
     
