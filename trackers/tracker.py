@@ -13,7 +13,7 @@ from utils import get_bbox_center, get_bbox_width, get_foot_position
 
 class Tracker:
 
-  def __init__(self, model_path):
+  def __init__(self, model_path, track_threshold):
     '''
     Initializes the tracker
     
@@ -21,7 +21,7 @@ class Tracker:
       model_path: path to the model
     '''
     self.model = YOLO(model_path)
-    self.tracker = sv.ByteTrack()
+    self.tracker = sv.ByteTrack(track_thresh = track_threshold, track_buffer = 10)
     
   
   def add_position_to_tracks(self, tracks):
@@ -66,7 +66,7 @@ class Tracker:
     return ball_positions
 
 
-  def detect_frames(self, frames):
+  def detect_frames(self, frames, detect_conf):
     '''
     Detects objects in a frames
     
@@ -80,14 +80,14 @@ class Tracker:
     detections = []
     for i in range(0, len(frames), batch_size):
       batch = frames[i:i+batch_size]
-      batch_detections = self.model.predict(batch, conf=0.1)
+      batch_detections = self.model.predict(batch, conf=detect_conf)
       detections += batch_detections
       
     # Return detections
     return detections
 
 
-  def get_object_tracks(self, frames, read_from_stubs=False, stub_path=None):
+  def get_object_tracks(self, frames, detect_conf, read_from_stubs=False, stub_path=None):
     '''
     Gets object tracks from frames
 
@@ -105,13 +105,15 @@ class Tracker:
         tracks = pickle.load(f)
         
         return tracks
+        
 
     # Detect objects
-    detections = self.detect_frames(frames)
+    detections = self.detect_frames(frames, detect_conf)
     
     # Initialize tracks
     tracks = {
         "players": [],
+        "goalkeepers": [],
         "referees": [],
         "ball": []
     }
@@ -122,22 +124,18 @@ class Tracker:
       cls_names = detection.names
       # Invert class names
       cls_names_inverse = {v: k for k, v in cls_names.items()}
-
+      
       # Convert detections to supervision
       detection_supervision = sv.Detections.from_ultralytics(detection)
       
-      # Convert goalkeeper to player
-      for object_ind, class_id in enumerate(detection_supervision.class_id):
-        if cls_names[class_id] == 'goalkeeper':
-          detection_supervision.class_id[object_ind] = cls_names_inverse['player']
-      
-    # Track detections
+        # Track detections
       detection_with_tracks = self.tracker.update_with_detections(
         detection_supervision
       )
-
+      
       # Format tracks in dictionary
       tracks['players'].append({})
+      tracks['goalkeepers'].append({})
       tracks['referees'].append({})
       tracks['ball'].append({})
       
@@ -151,9 +149,13 @@ class Tracker:
         # Add track to dictionary
         if cls_id == cls_names_inverse['player']:
           tracks['players'][frame_num][track_id] = {'bbox':bbox}
-          
+         
+        if cls_id == cls_names_inverse['goalkeeper']:
+          tracks['goalkeepers'][frame_num][track_id] = {'bbox':bbox}
+         
         if cls_id == cls_names_inverse['referee']:
           tracks['referees'][frame_num][track_id] = {'bbox':bbox}
+      
       
       # Iterate over detections
       for frame_detection in detection_supervision:
@@ -295,7 +297,7 @@ class Tracker:
     return frame
   
   
-  def draw_annotations(self, video_frames, tracks, team_ball_control):
+  def draw_annotations(self, video_frames, tracks, team_ball_control, referee_color):
     '''
     Draws annotations on the frames
 
@@ -315,6 +317,7 @@ class Tracker:
       
       # Get players, referees and ball dictionaries
       player_dict = tracks["players"][frame_num]
+      goalkeeper_dict = tracks["goalkeepers"][frame_num]
       referee_dict = tracks["referees"][frame_num]
       ball_dict = tracks["ball"][frame_num]
       
@@ -325,10 +328,16 @@ class Tracker:
         
         if player.get('has_ball', False):
           frame = self.draw_traingle(frame, player['bbox'], (0,0,255))
+          
+      # Draw goalkeepers
+      for track_id, goalkeeper in goalkeeper_dict.items():
+        goalkeeper_color = goalkeeper.get("team_color", (0,0,255))
+        frame = self.draw_ellipse(frame, goalkeeper["bbox"], goalkeeper_color, track_id)
         
       # Draw referees
       for _ , referee in referee_dict.items():
-        frame = self.draw_ellipse(frame, referee["bbox"], (0,255,255))
+        referees_color = referee_color
+        frame = self.draw_ellipse(frame, referee["bbox"], referees_color)
         
       # Draw ball
       for track_id, ball in ball_dict.items():

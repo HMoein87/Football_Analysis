@@ -1,9 +1,15 @@
 import numpy as np
+import json
+import os
+
 from utils import read_video, save_video
 from trackers import Tracker
 from team_color_assigner import TeamColorAssigner
 from player_ball_assigner import PlayerBallAssigner
 from camera_movement_estimator import CameraMovementEstimator
+from pitch_key_point import PitchKeyPoints , SoccerPitchConfiguration
+from view_transformer import ViewTransformer
+from pitch_key_point.draw_pitch import draw_pitch, draw_points_on_pitch
 
 
 def main():
@@ -12,7 +18,7 @@ def main():
     video_frames = read_video('input_video/08fd33_4.mp4')
     
     # Initialize tracker
-    tracker = Tracker("models/best.pt")
+    tracker = Tracker("models/player_detection/best.pt")
     
     # Get object tracks
     tracks = tracker.get_object_tracks(video_frames,
@@ -59,16 +65,40 @@ def main():
             team_ball_control.append(team_ball_control[-1])
     
     team_ball_control = np.array(team_ball_control)
-
+    
     # Draw output
     ## Draw object tracks
     output_video_frames = tracker.draw_annotations(video_frames, tracks, team_ball_control)
 
     # Draw camera movement
     output_video_frames = camera_movement_estimator.draw_camera_movement(output_video_frames, camera_movement_per_frame)
+    
+    # Pitch keypoint detection 
+    path = os.getcwd()
+    api_key_path = os.path.join(path, 'training/Roboflow.json')
+    roboflow_api = json.load(open(api_key_path))
+    api_key = roboflow_api["api_key"]
+    
+    pitch_key_point = PitchKeyPoints()
+    frame_points, pitch_points = pitch_key_point.key_point_detection(video_frames, api_key)
+    
+    CONFIG = SoccerPitchConfiguration()
+    output_radar_frames = []
+    
+    '''for frame_num, frame in enumerate(video_frames):
+        
+        radar = draw_pitch(config=CONFIG)
+        transformer = ViewTransformer(
+        source=frame_points[frame_num].astype(np.float32),
+        target=pitch_points[frame_num].astype(np.float32)
+        )
+        
+        output_radar_frames.append(radar)
+       ''' 
 
     # Save the video file
     save_video(output_video_frames, 'output_videos/output_video.avi')
+    save_video(output_radar_frames, 'output_videos/output_radar.avi')
 
 
 if __name__ == '__main__':
