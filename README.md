@@ -28,7 +28,7 @@ This repository provides tools and scripts for analyzing football (soccer) match
 3. **Install the required dependencies**:
 
    ```bash
-   cd Football_Analysis
+   pip install -r requirements.txt
 
 
 ## Usage
