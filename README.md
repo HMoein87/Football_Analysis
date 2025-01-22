@@ -40,6 +40,7 @@ The primary script for running the analysis is `main_notebook.ipynb`.
 Ensure your input data (e.g., match video or frames) is properly formatted and located in the directories expected by the scripts.
 
 
+![Demo Video](output_videos/A1606b0e6_0_output.avi)
 
 
 ## Modules
@@ -120,6 +121,9 @@ The repository contains several modules, each addressing a key component of foot
   - Combines the pitch key points detected using YOLO with homography techniques.
   - Generates a bird's-eye view of the pitch for strategic and spatial analysis.
 - **Use Case**: Enables accurate tactical visualization of player and ball movements.
+
+
+![Demo Video](output_videos/08fd33_41_output2.avi)
 
 
 ## Contributing
