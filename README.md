@@ -40,14 +40,42 @@ The primary script for running the analysis is `main_notebook.ipynb`.
 Ensure your input data (e.g., match video or frames) is properly formatted and located in the directories expected by the scripts.
 
 
-![Demo Video](output_videos/A1606b0e6_0_output.avi)
+
+https://github.com/user-attachments/assets/56acacd5-4002-4d07-a73a-305a79e24a7c
+
+
 
 
 ## Modules
 
 The repository contains several modules, each addressing a key component of football match analysis:
 
-### 1. `camera_movement_estimator`
+
+### 1. `training`
+
+- **Purpose**: Provides scripts and data for training models used in various modules.
+- **How It Works**: Includes datasets, preprocessing routines, and training pipelines for models like pitch key point detection and tracking.
+- **Use Case**: Extendable for fine-tuning the system with custom data.
+
+---
+
+### 2. `trackers`
+
+- **Purpose**: Implements tracking algorithms for players and the ball.
+- **How It Works**: 
+  - Incorporates **YOLO** for initial detection of players and the ball.
+  - Tracks the detected objects across frames using algorithms like Kalman filters or DeepSORT.
+- **Use Case**: Captures continuous player movements and ball trajectories throughout the match for tactical analysis.
+
+
+
+
+https://github.com/user-attachments/assets/91ece852-c7f2-4ca0-997c-99b9adfa6df3
+
+
+---
+
+### 3. `camera_movement_estimator`
 
 - **Purpose**: Estimates the movement of the camera during the match (e.g., pans, tilts, zooms).
 - **How It Works**: 
@@ -57,17 +85,8 @@ The repository contains several modules, each addressing a key component of foot
 
 ---
 
-### 2. `pitch_key_point`
 
-- **Purpose**: Detects key points on the football pitch, such as corners and lines, for perspective transformation.
-- **How It Works**:
-  - Utilizes **YOLO (You Only Look Once)**, a deep learning-based object detection framework, to recognize and localize pitch markings.
-  - Identified key points are used to perform homography transformations, enabling a top-down view of the pitch.
-- **Use Case**: Essential for aligning the camera's view with the pitch for spatial analysis.
-
----
-
-### 3. `player_ball_assigner`
+### 4. `player_ball_assigner`
 
 - **Purpose**: Links detected players with the ball to understand player-ball interactions.
 - **How It Works**: Combines spatial proximity and movement patterns derived from trackers to determine player-ball associations.
@@ -75,7 +94,7 @@ The repository contains several modules, each addressing a key component of foot
 
 ---
 
-### 4. `team_color_assigner`
+### 5. `team_color_assigner`
 
 - **Purpose**: Automatically assigns detected players to teams based on their jersey colors.
 - **How It Works**:
@@ -85,25 +104,32 @@ The repository contains several modules, each addressing a key component of foot
 
 ---
 
-### 5. `trackers`
+### 6. `pitch_key_point`
 
-- **Purpose**: Implements tracking algorithms for players and the ball.
+- **Purpose**: Detects key points on the football pitch, such as corners and lines, for perspective transformation.
+- **How It Works**:
+  - Utilizes **YOLO (You Only Look Once)**, a deep learning-based object detection framework, to recognize and localize pitch markings.
+  - Identified key points are used to perform homography transformations, enabling a top-down view of the pitch.
+- **Use Case**: Essential for aligning the camera's view with the pitch for spatial analysis.
+
+---
+
+
+https://github.com/user-attachments/assets/cee14fc7-b01b-4230-9bb3-f31e839c1443
+
+
+
+### 7. `view_transformer`
+
+- **Purpose**: Transforms the perspective of the match camera to a top-down, 2D view of the pitch.
 - **How It Works**: 
-  - Incorporates **YOLO** for initial detection of players and the ball.
-  - Tracks the detected objects across frames using algorithms like Kalman filters or DeepSORT.
-- **Use Case**: Captures continuous player movements and ball trajectories throughout the match for tactical analysis.
+  - Combines the pitch key points detected using YOLO with homography techniques.
+  - Generates a bird's-eye view of the pitch for strategic and spatial analysis.
+- **Use Case**: Enables accurate tactical visualization of player and ball movements.
 
 ---
 
-### 6. `training`
-
-- **Purpose**: Provides scripts and data for training models used in various modules.
-- **How It Works**: Includes datasets, preprocessing routines, and training pipelines for models like pitch key point detection and tracking.
-- **Use Case**: Extendable for fine-tuning the system with custom data.
-
----
-
-### 7. `utils`
+### 8. `utils`
 
 - **Purpose**: Contains utility functions used across the repository.
 - **Examples**:
@@ -112,18 +138,10 @@ The repository contains several modules, each addressing a key component of foot
   - Helper functions for file management
 - **Use Case**: Simplifies common tasks and improves modularity.
 
----
-
-### 8. `view_transformer`
-
-- **Purpose**: Transforms the perspective of the match camera to a top-down, 2D view of the pitch.
-- **How It Works**: 
-  - Combines the pitch key points detected using YOLO with homography techniques.
-  - Generates a bird's-eye view of the pitch for strategic and spatial analysis.
-- **Use Case**: Enables accurate tactical visualization of player and ball movements.
 
 
-![Demo Video](output_videos/08fd33_41_output2.avi)
+https://github.com/user-attachments/assets/b9947c8a-21c6-42d5-995a-5b3fb30105ac
+
 
 
 ## Contributing
