@@ -1,2 +1,0 @@
-# Contributors
-@mary199733
